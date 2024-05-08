@@ -14,5 +14,4 @@ const client = new Client({
 
 getFiles(client, `${__dirname}/events`);
 
-
 client.login(token);

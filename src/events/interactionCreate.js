@@ -4,6 +4,7 @@ const {
   StringSelectMenuOptionBuilder,
   ActionRowBuilder,
   ComponentType,
+  ConnectionVisibility,
 } = require("discord.js");
 const animeService = require("../services/animeService");
 
@@ -96,16 +97,23 @@ module.exports = async (client, interaction) => {
 
       epCollector.on("collect", async (message) => {
         epCollector.stop();
-        msg.setTitle("fetching anime url");
+        message.delete();
+
+        msg.setTitle(`fetching ep ${message.content}`);
         msg.setDescription("...");
         msg.setColor("Red");
-
         reply.edit({ embeds: [msg] });
 
-        const ep = foundEps[Number(message)];
+        const ep = foundEps.find((ep) => ep.label === Number(message.content));
+
+        if (!ep || ep.length === 0) {
+          reply.edit({ content: `Ep dont found`, embeds: [] });
+          return;
+        }
 
         const foundUrl = await animeService.getVideo(ep.value);
         reply.edit({ embeds: [], content: foundUrl });
+        return;
       });
     });
   }
