@@ -1,54 +1,30 @@
-const {
-  EmbedBuilder,
-  StringSelectMenuBuilder,
-  StringSelectMenuOptionBuilder,
-  ActionRowBuilder,
-  ComponentType,
-  ConnectionVisibility,
-} = require("discord.js");
-const animeService = require("../services/animeService");
+const { ComponentType } = require("discord.js");
 
-/**
- * @param {Object} param0
- * @param {import('discord.js').ChatInputCommandInteraction} param0.interaction
- */
+const { error, searching, found, video } = require("../../utils/embeds");
+const createActionRow = require("../../utils/selectMenu");
+
+const animeService = require("../services/animeService");
 
 module.exports = async (client, interaction) => {
   if (!interaction.isChatInputCommand()) return;
 
   if (interaction.commandName === "search") {
     const anime = interaction.options.getString("anime");
+    const searchingEmbed = searching();
 
-    const msg = new EmbedBuilder()
-      .setTitle(`Searching for ${anime}...`)
-      .setColor("Red");
+    await interaction.reply({ embeds: [searchingEmbed] });
 
-    interaction.reply({ embeds: [msg] });
+    const animes = await animeService.search(anime);
+    if (animes instanceof Error) {
+      await interaction.editReply({ embeds: [error(animes)] });
+      interaction.delete({ timeout: 10000 });
+      return;
+    }
 
-    const foundAnimes = await animeService.search(anime);
-
-    msg
-      .setTitle(`found ${foundAnimes.length} animes`)
-      .setDescription(`select bellow your desired one`)
-      .setColor("Green");
-
-    const selectMenu = new StringSelectMenuBuilder()
-      .setCustomId(interaction.id)
-      .setPlaceholder(`select...`)
-      .setMinValues(1)
-      .setMaxValues(1)
-      .setOptions(
-        foundAnimes.map((anime) =>
-          new StringSelectMenuOptionBuilder()
-            .setLabel(anime.label)
-            .setValue(anime.value)
-        )
-      );
-
-    const actionRow = new ActionRowBuilder().setComponents(selectMenu);
+    const actionRow = createActionRow();
 
     let reply = await interaction.editReply({
-      embeds: [msg],
+      embeds: [found(animes, 0)],
       components: [actionRow],
     });
 
@@ -56,39 +32,33 @@ module.exports = async (client, interaction) => {
       componentType: ComponentType.StringSelect,
       filter: (i) =>
         i.user.id === interaction.user.id && i.customId === interaction.id,
-      idle: 60_000,
+      idle: 30_000,
     });
 
     animeCollector.on("collect", async (interaction) => {
       animeCollector.stop();
       if (!interaction.values.length) {
-        interaction.reply("timeout");
+        await reply.edit("timeout");
+        await reply.delete({ timeout: 10000 });
         return;
       }
 
-      msg
-        .setTitle("fetching the selected anime...")
-        .setDescription("just a second")
-        .setColor("Red");
+      await reply.edit({ embeds: [searchingEmbed], components: [] });
 
-      reply.edit({ embeds: [msg], components: [] });
-
-      const foundEps = await animeService.searchEps([...interaction.values]);
-
-      msg
-        .setTitle("Anime sucessfully fetched")
-        .setDescription(
-          `Selected anime have ${foundEps.length} episodes, write down what episode you want to watch`
-        )
-        .setColor("Green");
+      const eps = await animeService.searchEps([...interaction.values]);
+      if (eps instanceof Error) {
+        await reply.edit({ embeds: [error(animes)] });
+        await reply.delete({ timeout: 10000 });
+        return;
+      }
 
       reply = await reply.edit({
-        embeds: [msg],
+        embeds: [found(eps, 1)],
       });
 
       const epCollector = interaction.channel.createMessageCollector({
         filter: (message) =>
-          Number(message.content) <= foundEps.length &&
+          Number(message.content) <= eps.length &&
           message.author.id === interaction.user.id &&
           message.channelId === interaction.channelId,
         max: 1,
@@ -99,20 +69,24 @@ module.exports = async (client, interaction) => {
         epCollector.stop();
         message.delete();
 
-        msg.setTitle(`fetching ep ${message.content}`);
-        msg.setDescription("...");
-        msg.setColor("Red");
-        reply.edit({ embeds: [msg] });
+        await reply.edit({ embeds: [searchingEmbed] });
 
-        const ep = foundEps.find((ep) => ep.label === Number(message.content));
+        const ep = eps.find((ep) => ep.label === Number(message.content));
 
         if (!ep || ep.length === 0) {
-          reply.edit({ content: `Ep dont found`, embeds: [] });
+          await reply.edit({ content: `Ep dont found`, embeds: [] });
+          await reply.delete({ timeout: 10000 });
           return;
         }
 
-        const foundUrl = await animeService.getVideo(ep.value);
-        reply.edit({ embeds: [], content: foundUrl });
+        const url = await animeService.getVideo(ep.value);
+        if (url instanceof Error) {
+          await reply.edit({ embeds: [error(animes)] });
+          await reply.delete({ timeout: 10000 });
+          return;
+        }
+
+        await reply.edit({ embeds: [video(url)] });
         return;
       });
     });

@@ -2,10 +2,14 @@ const axios = require("axios");
 const { apiUrl } = require("../../utils/config");
 
 const search = async (anime) => {
-  const { data } = await axios.get(
-    `${apiUrl}/search/${anime.replace(" ", "+")}`
-  );
-  return data;
+  try {
+    const response = await axios.get(
+      `${apiUrl}/search/${anime.replace(" ", "+")}`
+    );
+    return response.data;
+  } catch (err) {
+    return new Error(err);
+  }
 };
 
 const searchEps = async (anime) => {
