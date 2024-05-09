@@ -1,22 +1,36 @@
 const { EmbedBuilder } = require("discord.js");
 
-const error = (err) => {
-  return new EmbedBuilder().setTitle(`Error: ${err}`).setColor("Red");
-};
-
-const searching = (anime) => {
-  return new EmbedBuilder().setTitle(`wait a second...`).setColor("Red");
-};
-
-const found = (results, what) => {
+const error = (msg, c) => {
   return new EmbedBuilder()
-    .setTitle(`found ${results.length} ${what === 0 ? "animes" : "episodes"}`)
+    .setTitle(
+      c === 0
+        ? `Error: ${msg}`
+        : c === 1
+        ? `Too many results for ${msg}`
+        : `No animes found`
+    )
+    .setColor("Red");
+};
+
+const searching = (anime, c) => {
+  return new EmbedBuilder()
+    .setTitle(
+      c === 0
+        ? `getting results for ${anime}...`
+        : c === 1
+        ? `getting ${anime} episodes...`
+        : ``
+    )
+    .setColor("Red");
+};
+
+const found = (results, c) => {
+  return new EmbedBuilder()
+    .setTitle(`found ${results.length} ${c === 0 ? "animes" : "episodes"}`)
     .setDescription(
-      `${
-        what === 0
-          ? "select bellow your desired one"
-          : `Selected anime have ${results.length} episodes, write down what episode you want to watch`
-      }`
+      c === 0
+        ? "select bellow your desired one"
+        : `Selected anime have ${results.length} episodes, write down c episode you want to watch`
     )
     .setColor("Green");
 };
