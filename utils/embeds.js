@@ -4,7 +4,7 @@ const error = (msg, c) => {
   return new EmbedBuilder()
     .setTitle(
       c === 0
-        ? `Error: ${msg}`
+        ? `${msg}`
         : c === 1
         ? `Too many results for ${msg}`
         : `No animes found`
@@ -12,14 +12,14 @@ const error = (msg, c) => {
     .setColor("Red");
 };
 
-const searching = (anime, c) => {
+const searching = (anime, c, ep) => {
   return new EmbedBuilder()
     .setTitle(
       c === 0
         ? `getting results for ${anime}...`
         : c === 1
         ? `getting ${anime} episodes...`
-        : ``
+        : `getting ${anime} episode ${ep}`
     )
     .setColor("Red");
 };
@@ -35,8 +35,11 @@ const found = (results, c) => {
     .setColor("Green");
 };
 
-const video = (url) => {
-  return new EmbedBuilder().setTitle(url).setColor("Green");
+const video = (url, anime, ep) => {
+  return new EmbedBuilder()
+    .setTitle(`${anime} episode ${ep}`)
+    .setURL(url)
+    .setColor("Green");
 };
 
 module.exports = { error, searching, found, video };

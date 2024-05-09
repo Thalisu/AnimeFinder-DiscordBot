@@ -1,49 +1,42 @@
 const axios = require("axios");
 const { apiUrl } = require("../../utils/config");
 
-const search = async (anime, retries = 3, delay = 1000) => {
+const refetch = async (url, retries = 3, err, delay = 3000) => {
+  if (retries > 0) {
+    console.log("refetching");
+    await new Promise((resolve) => setTimeout(resolve, delay));
+    return axiosGet(url, retries - 1);
+  }
+
+  return new Error(err.message);
+};
+
+const axiosGet = async (url, retries = 3, delay) => {
   try {
-    const response = await axios.get(
-      `${apiUrl}/search/${anime.replace(" ", "+")}`
-    );
-    return response.data;
+    const response = await axios.get(url);
+    return response.data.length === 0 && retries > 0
+      ? await refetch(url, retries)
+      : response.data;
   } catch (err) {
-    if (retries > 0) {
-      console.time("t");
-      await new Promise((resolve) => setTimeout(resolve, delay));
-      console.timeEnd("t");
-      return search(anime, retries - 1, delay);
-    }
-    return new Error(err);
+    return refetch(url, retries, err);
   }
 };
 
-const searchEps = async (anime, retries = 3, delay = 1000) => {
-  try {
-    const response = await axios.get(`${apiUrl}/eps/${anime}`);
-    return response.data;
-  } catch (error) {
-    if (retries > 0) {
-      console.log("retry");
-      await new Promise((resolve) => setTimeout(resolve, delay));
-      return searchEps(anime, retries - 1, delay);
-    }
-    return new Error(err);
-  }
+const search = async (anime) => {
+  const response = await axiosGet(
+    `${apiUrl}/search/${anime.replace(" ", "+")}`
+  );
+  return response;
 };
 
-const getVideo = async (anime, retries = 3, delay = 1000) => {
-  try {
-    const response = await axios.get(`${apiUrl}/see/${anime}`);
-    return response.data;
-  } catch (error) {
-    if (retries > 0) {
-      console.log("retry");
-      await new Promise((resolve) => setTimeout(resolve, delay));
-      return getVideo(anime, retries - 1, delay);
-    }
-    return new Error(err);
-  }
+const searchEps = async (anime) => {
+  const response = await axiosGet(`${apiUrl}/eps/${anime}`);
+  return response;
+};
+
+const getVideo = async (anime) => {
+  const response = await axiosGet(`${apiUrl}/see/${anime}`);
+  return response;
 };
 
 module.exports = {
