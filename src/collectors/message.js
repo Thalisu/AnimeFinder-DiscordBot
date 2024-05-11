@@ -28,6 +28,10 @@ module.exports = async (interaction, eps, formatedCurrentAnime) => {
       return;
     }
 
-    await buttonCollector(interaction, eps, ep, formatedCurrentAnime);
+    try {
+      await buttonCollector(interaction, eps, ep, formatedCurrentAnime);
+    } catch (error) {
+      console.error(error)
+    }
   });
 };

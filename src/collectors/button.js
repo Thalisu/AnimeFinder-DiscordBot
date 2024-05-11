@@ -22,7 +22,7 @@ module.exports = async (interaction, eps, ep, formatedCurrentAnime) => {
 
   const buttonsCollector = await reply.createMessageComponentCollector({
     componentType: ComponentType.Button,
-    time: 1_800_000,
+    idle: 1_800_000,
   });
 
   buttonsCollector.on("collect", async (i) => {
@@ -38,12 +38,12 @@ module.exports = async (interaction, eps, ep, formatedCurrentAnime) => {
     await i.deferUpdate();
     const prevOrNext = i.customId === "next" ? 1 : -1;
     ep = eps.find((prev) => prev.label === ep.label + prevOrNext);
-    await interaction.editReply({
+    await reply.edit({
       embeds: [searching(formatedCurrentAnime, 2, ep.label)],
       components: [],
     });
     const url = await animeService.getVideo(ep.value);
-    await interaction.editReply({
+    await reply.edit({
       embeds: [video(url, formatedCurrentAnime, ep.label)],
       components: [buttonsActionRow(ep.label, eps.length)],
     });
@@ -53,7 +53,7 @@ module.exports = async (interaction, eps, ep, formatedCurrentAnime) => {
   });
 
   buttonsCollector.on("end", async () => {
-    await interaction.deleteReply();
+    await reply.delete();
     return;
   });
   return;
