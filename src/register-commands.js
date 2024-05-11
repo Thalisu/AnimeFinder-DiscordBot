@@ -4,7 +4,7 @@ const { token, clientId } = require("../utils/config");
 const commands = [
   {
     name: "search",
-    description: "searchForAnime",
+    description: "Procura por um anime",
     options: [
       {
         name: "anime",
@@ -13,6 +13,10 @@ const commands = [
         required: true,
       },
     ],
+  },
+  {
+    name: "calendar",
+    description: "Mostra em que dia da semana cada anime sai",
   },
 ];
 

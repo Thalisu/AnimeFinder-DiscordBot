@@ -17,7 +17,7 @@ module.exports = async (interaction, eps, ep, formatedCurrentAnime) => {
 
   const reply = await interaction.editReply({
     embeds: [video(url, formatedCurrentAnime, ep.label)],
-    components: [buttonsActionRow(ep, eps)],
+    components: [buttonsActionRow(ep.label, eps.length)],
   });
 
   const buttonsCollector = await reply.createMessageComponentCollector({
@@ -28,7 +28,7 @@ module.exports = async (interaction, eps, ep, formatedCurrentAnime) => {
   buttonsCollector.on("collect", async (i) => {
     if (i.user.id !== interaction.user.id) {
       const r = await i.reply({
-        content: `Only **${interaction.user.username}** can interact with these buttons!`,
+        content: `Somente **${interaction.user.username}** pode interagir com esses botões!`,
         ephemeral: true,
       });
       timeoutDelete(r);
@@ -49,10 +49,12 @@ module.exports = async (interaction, eps, ep, formatedCurrentAnime) => {
     });
 
     buttonsCollector.resetTimer();
+    return;
   });
 
   buttonsCollector.on("end", async () => {
     await interaction.deleteReply();
     return;
   });
+  return;
 };

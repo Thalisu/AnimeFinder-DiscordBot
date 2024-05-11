@@ -1,15 +1,15 @@
 const { ButtonBuilder, ActionRowBuilder, ButtonStyle } = require("discord.js");
 
-module.exports = (ep, eps) => {
+module.exports = (index, max) => {
   const prevEp = new ButtonBuilder()
     .setEmoji("◀️")
     .setCustomId("prev")
     .setStyle(ButtonStyle.Primary)
-    .setDisabled(ep.label === 1);
+    .setDisabled(index === 1);
 
   const epCount = new ButtonBuilder()
     .setCustomId("pagecount")
-    .setLabel(`${ep.label}/${eps.length}`)
+    .setLabel(`${index}/${max}`)
     .setStyle(ButtonStyle.Secondary)
     .setDisabled(true);
 
@@ -17,7 +17,7 @@ module.exports = (ep, eps) => {
     .setEmoji("▶️")
     .setCustomId("next")
     .setStyle(ButtonStyle.Primary)
-    .setDisabled(ep.label === eps.length);
+    .setDisabled(index === max);
 
   return new ActionRowBuilder().setComponents(prevEp, epCount, nextEp);
 };
