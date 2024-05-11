@@ -22,7 +22,7 @@ module.exports = async (interaction, eps, ep, formatedCurrentAnime) => {
 
   const buttonsCollector = await reply.createMessageComponentCollector({
     componentType: ComponentType.Button,
-    time: 30 * 60000,
+    time: 1_800_000,
   });
 
   buttonsCollector.on("collect", async (i) => {
@@ -45,7 +45,7 @@ module.exports = async (interaction, eps, ep, formatedCurrentAnime) => {
     const url = await animeService.getVideo(ep.value);
     await interaction.editReply({
       embeds: [video(url, formatedCurrentAnime, ep.label)],
-      components: [buttonsActionRow(ep, eps)],
+      components: [buttonsActionRow(ep.label, eps.length)],
     });
 
     buttonsCollector.resetTimer();
