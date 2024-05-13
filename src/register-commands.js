@@ -18,6 +18,10 @@ const commands = [
     name: "calendar",
     description: "Mostra em que dia da semana cada anime sai",
   },
+  {
+    name: "recents",
+    description: "Mostra os ultimos animes que sairam",
+  },
 ];
 
 module.exports = async () => {

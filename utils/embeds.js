@@ -12,16 +12,16 @@ const error = (msg, c) => {
     .setColor("Red");
 };
 
-const searching = (anime, c, ep) => {
+const searching = (oque, c, ep) => {
   return new EmbedBuilder()
     .setTitle(
       c === 0
-        ? `Conseguindo resultados para ${anime}...`
+        ? `Conseguindo resultados para ${oque}...`
         : c === 1
-        ? `Conseguindo a lista de episódios de ${anime}`
+        ? `Conseguindo a lista de episódios de ${oque}`
         : c === 2
-        ? `Conseguindo o episódio ${ep} de ${anime}`
-        : `Montando o calendário...`
+        ? `Conseguindo o episódio ${ep} de ${oque}`
+        : `Montando o ${oque}...`
     )
     .setColor("Red");
 };
@@ -39,13 +39,11 @@ const found = (results, c) => {
 
 const video = (url, anime, ep) => {
   return new EmbedBuilder()
-    .setTitle(`${anime} episódio ${ep}`)
+    .setTitle(`${anime}${ep ? ` episodio ${ep}` : ""}`)
     .setURL(url)
     .setColor("Green");
 };
 
-const calendar = (day, title, img) => {
-
-};
+const calendar = (day, title, img) => {};
 
 module.exports = { error, searching, found, video, calendar };

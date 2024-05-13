@@ -1,14 +1,17 @@
-const { ComponentType } = require("discord.js");
-
-const { found, searching, error } = require("../../utils/embeds");
-const { timeoutDelete } = require("../../utils/functions");
+const { searching, found, video } = require("../../utils/embeds");
 const createDDLActionRow = require("../../utils/ddlActionRow");
 
 const animeService = require("../services/animeService");
+const recentService = require("../services/recentService");
 
-const messageCollector = require("./message");
+const { timeoutDelete } = require("../../utils/functions");
+const { ComponentType } = require("discord.js");
 
-module.exports = async (interaction, animes) => {
+module.exports = async (interaction) => {
+  await interaction.reply({ embeds: [searching(`recentes`, 3)] });
+
+  const animes = await recentService.getAll();
+
   const actionRow = createDDLActionRow(interaction, animes);
 
   const reply = await interaction.editReply({
@@ -47,34 +50,25 @@ module.exports = async (interaction, animes) => {
       return;
     }
 
-    i.deferUpdate();
+    const selectedAnime = animes.find((a) => a.value === i.values.join()).label;
 
+    i.deferUpdate();
     interacted = true;
     animeCollector.stop();
 
-    const formatedCurrentAnime =
-      i.values.join().charAt(0).toUpperCase() +
-      i.values.join().slice(1).replaceAll("-", " ");
-
-    const currentAnime = i.values.join();
-
     await reply.edit({
-      embeds: [searching(formatedCurrentAnime, 1)],
+      embeds: [searching(selectedAnime, 1)],
       components: [],
     });
 
-    const eps = await animeService.searchEps(currentAnime);
-
-    if (eps instanceof Error) {
-      await reply.edit({ embeds: [error(animes, 0)] });
-      timeoutDelete(reply);
-      return;
-    }
+    const url = await animeService.getVideo(i.values.join());
 
     await reply.edit({
-      embeds: [found(eps, 1)],
+      embeds: [video(url, selectedAnime)],
     });
-
-    await messageCollector(interaction, eps, formatedCurrentAnime);
+    setTimeout(() => {
+      reply.delete();
+    }, 30 * 1000);
+    return;
   });
 };
