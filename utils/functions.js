@@ -2,7 +2,9 @@ const axios = require("axios");
 
 const timeoutDelete = (interaction) => {
   setTimeout(() => {
-    interaction.deleteReply() || interaction.delete();
+    if (typeof interaction.deleteReply === "function") {
+      interaction.deleteReply();
+    } else if (typeof interaction.delete === "function") interaction.delete();
   }, 5000);
 };
 
