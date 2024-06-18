@@ -22,7 +22,7 @@ module.exports = async (interaction, eps, ep, formatedCurrentAnime) => {
 
   const buttonsCollector = await reply.createMessageComponentCollector({
     componentType: ComponentType.Button,
-    idle: 1_800_000,
+    idle: 3_800_000,
   });
 
   buttonsCollector.on("collect", async (i) => {
